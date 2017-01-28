@@ -10,15 +10,11 @@ on inside my cheese cave and could automate the control of the environment in th
 ## Requirements
 
     - A Raspberry Pi. I'm using a B, but any model should work with a little effort.
-    - A DHT22 temperature and humidity sensor. (I went with the AM2302 from adafruit, which is a DHT22, but 
-wired and in a nice enclosure.)
+    - A DHT22 temperature and humidity sensor. (I went with the AM2302 from adafruit, which is a DHT22, but wired and in a nice enclosure.)
     - A 20 X 4 or 16 X 2 LCD, if onboard display is wanted.
-    - *Optional for upcoming feature: A 120V power relay to control power to the humidifier. (Something like 
-the Adafruit Power Relay FeatherWing.)
-    - Potentially to be added at a future date: temperature control. This would require another power relay 
-controlled outlet.
-    - At this point, time and patience. This project is pre-alpha and my first python based project beyond 
-simple scripts.
+    - *Optional for upcoming feature: A 120V power relay to control power to the humidifier. (Something like the Adafruit Power Relay FeatherWing.)
+    - Potentially to be added at a future date: temperature control. This would require another power relay controlled outlet.
+    - At this point, time and patience. This project is pre-alpha and my first python based project beyond simple scripts.
     
 ## Installation
 
