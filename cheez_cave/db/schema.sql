@@ -1,4 +1,4 @@
-DROP TABLE readings;
+DROP TABLE if exists readings;
 
 CREATE TABLE readings (
 					id integer primary key,
