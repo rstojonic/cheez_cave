@@ -1,0 +1,5 @@
+.mode insert readings
+.output insert.sql
+select * from readings;
+.output stdout
+
