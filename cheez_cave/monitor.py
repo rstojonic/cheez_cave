@@ -21,49 +21,75 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+import ConfigParser
 import logging
 import logging.config
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from cheez_cave import chart_service
-from cheez_cave import display_service
-from cheez_cave import readings_service
-from cheez_cave import sensor_service
+import cheez_cave.service.chart_service as chart_service
+import cheez_cave.service.display_service as display_service
+import cheez_cave.service.humid_service as humid_service
+import cheez_cave.service.readings_service as readings_service
+import cheez_cave.service.sensor_service as sensor_service
+
 
 class Monitor():
     def __init__(self):
-        logging.config.fileConfig('/home/pi/cheez_cave/cheez_cave.conf')
+        config_file = '/home/pi/cheez_cave/cheez_cave.conf'
+        logging.config.fileConfig(config_file)
         self.logger = logging.getLogger('Monitor')
-        self.sensor = sensor_service.SensorService()
-        self.dao = readings_service.ReadingsService()
-        self.display = display_service.DisplayService()
-        self.chart = chart_service.ChartService()
+        self.config = ConfigParser.ConfigParser()
+        self.config.read(config_file)
+        
+        self.chart = chart_service.ChartService(self.config)
+        self.display = display_service.DisplayService(self.config)
+        self.humidifier = humid_service.HumidService(self.config, self.display)
+        self.dao = readings_service.ReadingsService(self.config)
+        self.sensor = sensor_service.SensorService(self.config)
         
     def persist_reading(self):
         ''' Get the current sensor reading and persist in database '''
-        humidity, temperature = self.sensor.read_f()
+        humidity, temperature = self.read_sensor()
         result = self.dao.insert_reading(humidity, temperature)
         self.logger.debug('Reading insert attempt: temp : {}, rh : {}, result: {}'
                             .format(temperature, humidity, result)
                          )
         self.display.update(humidity, temperature)
-        self.chart.default_chart()
-        
+        self.chart.generate_default_chart()
+
+    def update_humidifier(self):
+        humidity = self.read_sensor()[0]
+        self.logger.debug('Updating humidifer, current rh: {}%'.format(humidity))
+        self.humidifier.update_humidifier(humidity)
+
+    def read_sensor(self):
+        return self.sensor.read_f()
     
     def tick(self):
         self.display.update_time()
     
     def main(self):
 
-        # initialize the display with the current sensor reading
-        humidity, temperature = self.sensor.read_f()
+        # Initialize the display with the current sensor reading.
+        humidity, temperature = self.read_sensor()
         self.display.update(humidity, temperature)
     
-        # schedule the jobs
+        # Schedule the jobs.
         sched = BlockingScheduler()
+
+        # Schedule persist_reading for every 5 minutes.
         sched.add_job(self.persist_reading, trigger='cron', minute='*/5')
         self.logger.info('Monitor persist_reading job added to schedule')
+
+        # Schedule humidifier for every minute, at 30 seconds
+        # initially had at every minute, 0 seconds, but the extra load
+        # caused the tick job to miss its scheduled time, resulting in a 
+        # blank display.
+        sched.add_job(self.update_humidifier, trigger='cron', minute='*/1', second=30)
+        self.logger.info('Monitor update_humidifier job added to schedule')
+
+        # Schedule tick for every second.
         sched.add_job(self.tick, trigger='cron', second='*')
         self.logger.info('Monitor tick job added to schedule')
         

@@ -32,7 +32,8 @@ import pygal
 from pygal.style import DarkSolarizedStyle
 from pygal import Config
 
-from readings_service import ReadingsService
+import cheez_cave.service.readings_service as readings_service
+
 
 class ChartService:
 
@@ -42,14 +43,11 @@ class ChartService:
     APP_SECTION = 'AppOptions'
     CHART_SECTION = 'ChartOptions'
     
-    def __init__(self):
+    def __init__(self, config):
         self.logger = logging.getLogger('ChartService')
+        self.config = config
 
-        self.dao = ReadingsService()
-
-        # get file path and name from config
-        self.config = ConfigParser.ConfigParser()
-        self.config.read('/home/pi/cheez_cave/cheez_cave.conf')
+        self.dao = readings_service.ReadingsService(self.config)
 
         # get chart config from config file
         chart_options = self.config._sections[ChartService.CHART_SECTION]
@@ -97,9 +95,9 @@ class ChartService:
         except Error as e:
             self.logger.error(e)
     
-    def default_chart(self):
+    def generate_default_chart(self):
         # Generates the default chart (previous 24 hours) and
-        # and writes to file specified by AppOptions.svg_filename
+        # and writes to file specified by AppOptions.svg_fullpath
         # in cheez_cave.conf.
         data = self.get_data()
         chart = self.render_chart(data)
