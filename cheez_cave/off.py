@@ -21,8 +21,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from cheez_cave import display_service
+import ConfigParser
+
+import cheez_cave.service.display_service as display_service
+import cheez_cave.service.humid_service as humid_service
+
+config_file = '/home/pi/cheez_cave/cheez_cave.conf'
+config = ConfigParser.ConfigParser()
+config.read(config_file)
+
 
 # quick script to turn off the LCD when not in use
-d = display_service.DisplayService()
+d = display_service.DisplayService(config)
 d.off()
+
+# turn off the humidifier 
+humid_service.HumidService(config)

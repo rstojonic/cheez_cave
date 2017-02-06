@@ -22,23 +22,23 @@
 # THE SOFTWARE.
 
 # Adapted from Adafruit_Python_DHT
+
+
+import ConfigParser
+
 import Adafruit_DHT
+
 
 class SensorService():
 
-    def __init__(self):
-        # Sensor should be set to Adafruit_DHT.DHT11,
-        # Adafruit_DHT.DHT22, or Adafruit_DHT.AM2302.
-        #sensor = Adafruit_DHT.DHT22
+    APP_SECTION = 'AppOptions'
+
+    def __init__(self, config):
         self.sensor = Adafruit_DHT.AM2302
-        
-        # Example using a Beaglebone Black with DHT sensor
-        # connected to pin P8_11.
-        #pin = 'P8_11'
-        
-        # Example using a Raspberry Pi with DHT sensor
-        # connected to GPIO23.
-        self.pin = 17
+      
+        self.config = config
+  
+        self.pin = self.config.get(SensorService.APP_SECTION, 'sensor_pin')
 
         # number of decimal digits in response
         self.ndigits = 1

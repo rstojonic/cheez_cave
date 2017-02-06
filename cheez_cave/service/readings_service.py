@@ -29,8 +29,7 @@ from cheez_cave import readings_dao
 
 class ReadingsService():
 
-    def __init__(self):
-#        logging.config.fileConfig("/home/pi/cheez_cave/cheez_cave.conf")
+    def __init__(self, config):
         self.logger = logging.getLogger('ReadingsService')
         self.dao = readings_dao.ReadingsDAO()
 
