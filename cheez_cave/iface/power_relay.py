@@ -30,15 +30,12 @@ class PowerRelay():
         GPIO.output(self.gpio_pin, default)
 
     def turn_on(self):
-        self.logger.debug('Closing NO side')
-        self.toggle()
+        if(not GPIO.input(self.gpio_pin)):
+            self.logger.debug('Closing NO side')
+            GPIO.output(self.gpio_pin, GPIO.HIGH)
 
     def turn_off(self):
-        self.logger.debug('Opening NO side')
-        self.toggle()
+        if(GPIO.input(self.gpio_pin)):
+            self.logger.debug('Opening NO side')
+            GPIO.output(self.gpio_pin, GPIO.LOW)
 
-    def toggle(self):
-        self.logger.debug('Current state: {}, setting to {}'
-                    .format(GPIO.input(self.gpio_pin), not GPIO.input(self.gpio_pin)))
-
-        GPIO.output(self.gpio_pin, not GPIO.input(self.gpio_pin))
