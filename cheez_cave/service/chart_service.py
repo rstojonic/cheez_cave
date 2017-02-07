@@ -52,15 +52,29 @@ class ChartService:
         # get chart config from config file
         chart_options = self.config._sections[ChartService.CHART_SECTION]
 
-        # process chart config into pygal friendly Config
+        # process chart config into pygal friendly Config.
+        # The title is a string value and must be quoted for ast
+        # to properly process it. I tried to do this in the conf file
+        # but a quoted string there won't have refs (ie:%(var)s) replaced.
+        # Pop it out now, and add it back after ast has had its way, using
+        # the config to run the replacement.
+        title = self.config.get(ChartService.CHART_SECTION, 'title')
+        chart_options.pop('title')
+
+        # __name__ will be a string, but it's not needed here, so
+        # just pop it out.
         chart_options.pop('__name__')
+
         for key in chart_options.keys():
             chart_options[key] = ast.literal_eval(chart_options[key])
+        chart_options['title'] = title
+
         self.logger.debug('chart options: ' + str(chart_options))
+
         self.pygal_config = Config(**chart_options)
 
     def get_data(self, begin=None, end=None):
-        # Retrieve data from provided range from database
+        # Retrieve data from provided range from database.
         if end is None:
             end = datetime.datetime.now()
     
