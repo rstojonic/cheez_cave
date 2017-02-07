@@ -120,6 +120,14 @@ class DisplayService:
 
     def config_message(self):
         lines = []
-        for i in range(1, 5):
+
+        # make line 1 20 characters long
+        line_1 = '{:20}'.format(self.config.get(DISPLAY_SECTION, 'line_1'))
+        arr = list(line_1)
+        # replace the last char with a format spot at the end for the rh indicator
+        arr[len(arr)-1] = '{}'
+        lines.append(''.join(arr))
+        # add remaining lines        
+        for i in range(2, 5):
             lines.append(self.config.get(DISPLAY_SECTION, 'line_' + str(i)))
         return '\n'.join(lines)
