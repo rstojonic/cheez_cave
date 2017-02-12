@@ -38,7 +38,7 @@ sys.setdefaultencoding("utf-8")
 app = Flask(__name__)
 logger = logging.getLogger('CheezCaveWebApp')
 
-# get file path and name from config
+# get file name from config
 config = ConfigParser.ConfigParser()
 config.read('/home/pi/cheez_cave/cheez_cave.conf')
 SVG_FILENAME = config.get('AppOptions', 'svg_filename')
@@ -54,8 +54,8 @@ def index():
 
 @app.route('/cave')
 def get_cave_data(begin=None, end=None):
-    '''Return chart with readings from requested range.
-    Defaults to last 24 hours.
+    ''' Return chart with readings from requested range.
+        Defaults to last 24 hours.
     '''
     global logger
     global SVG_FILENAME
@@ -70,7 +70,11 @@ def get_cave_data(begin=None, end=None):
     
 #    logger.debug('selecting readings range from {} to {}'.format(begin, end))
 
-    return render_template('monitor.html', svg_file=filename, date=str(datetime.datetime.now()))
+    return render_template('monitor.html', 
+                           title=config.get('AppOptions', 'title'),
+                           svg_file=filename, 
+                           date=str(datetime.datetime.now())
+    )
 
 def main():
     # Threaded or not threaded? It's up to you.

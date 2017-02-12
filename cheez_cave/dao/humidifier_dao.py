@@ -29,39 +29,27 @@ import time
 import sqlite3
 
 
-class ReadingsDAO():
+class HumidifierDAO():
 
-    CONFIG_SECTION = 'ReadingsDAO_Options'
+    CONFIG_SECTION = 'HumidifierDAO_Options'
 
     def __init__(self, config):
-        self.logger = logging.getLogger('ReadingsDao')
-        self.db_file = config.get(ReadingsDAO.CONFIG_SECTION, 'db_fullpath')
-        # self.db_file = '/home/pi/cheez_cave/cheez_cave/db/readings.db'
+        self.logger = logging.getLogger('HumidifierDao')
+        self.db_file = config.get(HumidifierDAO.CONFIG_SECTION, 'db_fullpath')
 
-    def insert_reading(self, humidity, temperature):
-        ''' Insert new reading into database.
+    def insert_humid_mode(self, mode):
+        ''' Insert new humidifier mode into database.
             The time of the insertion will be used as the [created] field.
-            Also updates the humidity moving average field.
         '''
 
-        insert = ''' insert into readings(created, temperature, humidity)
-                  values(datetime('now', 'localtime'), ?, ?); '''
-
-        # set the moving average to the average of the current humidity reading
-        # and the previous 99 (window = 100)
-        update = ''' update readings
-                     set humidity_mov_avg = (
-                         select avg(humidity) from readings 
-                         where id between (? - 99) and ?
-                     )
-                     where id = ?; '''
+        insert = ''' insert into humidifier(created, mode)
+                     values(datetime('now', 'localtime'), ?); '''
 
         try:
             conn = self.get_connection()
             with conn:
                 cur = conn.cursor()
-                cur.execute(insert, (temperature, humidity))
-                cur.execute(update, (cur.lastrowid, cur.lastrowid, cur.lastrowid))
+                cur.execute(insert, (mode,))
                 return cur.lastrowid
 
         except Exception as e:
@@ -76,11 +64,8 @@ class ReadingsDAO():
             end  : datetime string of format %Y-%m-%d %H:%M(:%S)
         '''
 
-        sql = """ select created, humidity, temperature,
-                      case when humidity_mov_avg is null then 
-                          0.0 else humidity_mov_avg 
-                      end
-                  from readings
+        sql = """ select created, mode 
+                  from humidifier
                   where created > ?
                       and created < ?; """
     

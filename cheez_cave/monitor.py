@@ -30,26 +30,27 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 import cheez_cave.service.chart_service as chart_service
 import cheez_cave.service.display_service as display_service
 import cheez_cave.service.humid_service as humid_service
-import cheez_cave.service.readings_service as readings_service
+import cheez_cave.service.data_service as data_service
 import cheez_cave.service.sensor_service as sensor_service
 
 
 class Monitor():
     def __init__(self):
-        config_file = '/home/pi/cheez_cave/cheez_cave.conf'
-        logging.config.fileConfig(config_file)
-        self.logger = logging.getLogger('Monitor')
         self.config = ConfigParser.ConfigParser()
+        config_file = '/home/pi/cheez_cave/cheez_cave.conf'
         self.config.read(config_file)
+
+        logging.config.fileConfig(self.config.get('AppOptions', 'logging_conf')
+        self.logger = logging.getLogger('Monitor')
         
         self.chart = chart_service.ChartService(self.config)
         self.display = display_service.DisplayService(self.config)
         self.humidifier = humid_service.HumidService(self.config, self.display)
-        self.dao = readings_service.ReadingsService(self.config)
+        self.dao = data_service.DataService(self.config)
         self.sensor = sensor_service.SensorService(self.config)
         
     def persist_reading(self):
-        ''' Get the current sensor reading and persist in database '''
+        ''' Get the current sensor reading and persist in database. '''
         humidity, temperature = self.read_sensor()
         result = self.dao.insert_reading(humidity, temperature)
         self.logger.debug('Reading insert attempt: temp : {}, rh : {}, result: {}'
@@ -59,6 +60,7 @@ class Monitor():
         self.chart.generate_default_chart()
 
     def update_humidifier(self):
+        ''' Get the current humidity and update humidifier control. '''
         humidity = self.read_sensor()[0]
         self.logger.debug('Updating humidifer, current rh: {}%'.format(humidity))
         self.humidifier.update_humidifier(humidity)
@@ -82,8 +84,8 @@ class Monitor():
         sched.add_job(self.persist_reading, trigger='cron', minute='*/5')
         self.logger.info('Monitor persist_reading job added to schedule')
 
-        # Schedule humidifier for every minute, at 30 seconds
-        # initially had at every minute, 0 seconds, but the extra load
+        # Schedule humidifier for every minute, at 30 seconds.
+        # Initially had at every minute, 0 seconds, but the extra load
         # caused the tick job to miss its scheduled time, resulting in a 
         # blank display.
         sched.add_job(self.update_humidifier, trigger='cron', minute='*/1', second=30)

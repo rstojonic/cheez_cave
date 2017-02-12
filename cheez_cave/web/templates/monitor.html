@@ -1,8 +1,7 @@
 {% extends "base.html" %}
-{% block title %} Cheese Cave Monitor {% endblock %}
 {% block content %}
-<div id="chart">
-    <img src="{{ url_for('static', filename='charts/%s' % (svg_file)) }}#{{ date }}">
+<div class="fluidMedia">
+    <iframe src="{{ url_for('static', filename='charts/%s' % (svg_file)) }}#{{ date }}" frameborder="0"> </iframe>
 </div>
 {% endblock %}
 

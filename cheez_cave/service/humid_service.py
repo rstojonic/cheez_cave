@@ -30,6 +30,7 @@ import ConfigParser
 
 import cheez_cave.iface.power_relay as power_relay
 import cheez_cave.service.display_service
+import cheez_cave.service.data_service as data_service
 
 class HumidService:
 
@@ -41,6 +42,7 @@ class HumidService:
         self.logger = logging.getLogger('HumidService')
         self.config = config
         self.display = display
+        self.dao = data_service.DataService(config)
 
         pin = int(self.config.get(HumidService.APP_SECTION, 'humidifier_pin'))
         self.humidifier = power_relay.PowerRelay('humidifier', pin)
@@ -86,14 +88,20 @@ class HumidService:
             if self.state and float(rh) > float(self.rh_high):
                 self.turn_off()
 
+        mode = 'OFF'
+        if(self.state):
+            mode = 'ON'
+
+        self.dao.insert_humid_mode(mode)
+
     def turn_on(self):
         ''' Turn the humidifier power relay on. '''
-        self.logger.debug('Turning humidifier ON')
+        self.logger.info('Turning humidifier ON')
         self.toggle(self.humidifier.turn_on, True)
     
     def turn_off(self):
         ''' Turn the humidifier power relay off. '''
-        self.logger.debug('Turning humidifier OFF')
+        self.logger.info('Turning humidifier OFF')
         self.toggle(self.humidifier.turn_off, False)
     
     def toggle(self, func, state):
