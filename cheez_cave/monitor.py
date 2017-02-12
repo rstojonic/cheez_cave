@@ -40,7 +40,7 @@ class Monitor():
         config_file = '/home/pi/cheez_cave/cheez_cave.conf'
         self.config.read(config_file)
 
-        logging.config.fileConfig(self.config.get('AppOptions', 'logging_conf')
+        logging.config.fileConfig(self.config.get('AppOptions', 'logging_conf'))
         self.logger = logging.getLogger('Monitor')
         
         self.chart = chart_service.ChartService(self.config)
